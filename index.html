@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loan Amortization Schedule</title>
+  <style>
+    :root {
+      --bg-color: #f4f4f4;
+      --text-color: #333;
+      --container-bg: #ffffff;
+      --active-border-color: #000;
+      --table-header-bg: transparent;
+      --table-header-text: var(--text-color);
+      --switcher-bg: #eee;
+      --alt-row-color: #f9f9f9;
+    }
+    body.theme-light {
+      --bg-color: #f4f4f4;
+      --text-color: #333;
+      --container-bg: #ffffff;
+      --active-border-color: #000;
+      --table-header-bg: transparent;
+      --table-header-text: #333;
+      --switcher-bg: #eee;
+      --alt-row-color: #f9f9f9;
+    }
+    body.theme-dark {
+      --bg-color: #222222;
+      --text-color: #dddddd;
+      --container-bg: #333333;
+      --active-border-color: #dddddd;
+      --table-header-bg: transparent;
+      --table-header-text: #dddddd;
+      --switcher-bg: #444;
+      --alt-row-color: #444444;
+    }
+    body.theme-blue {
+      --bg-color: #e3f2fd;
+      --text-color: #333333;
+      --container-bg: #ffffff;
+      --active-border-color: #0056b3;
+      --table-header-bg: transparent;
+      --table-header-text: #333;
+      --switcher-bg: #b3d4fc;
+      --alt-row-color: #d0e3f8;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s, font-size 0.3s;
+    }
+    /* Container and Card Layout */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--container-bg);
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transition: background-color 0.3s;
+    }
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: var(--container-bg);
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 15px;
+      flex: 1 1 30%;
+      box-sizing: border-box;
+    }
+    .card.full {
+      flex: 1 1 100%;
+    }
+    /* Detail tables with transparent borders */
+    .detail-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .detail-table th,
+    .detail-table td {
+      border: none;
+      padding: 8px;
+      text-align: center;
+    }
+    .detail-table th {
+      background-color: transparent;
+      color: var(--text-color);
+    }
+    h1, h2, h3 {
+      margin-top: 0;
+    }
+    h1 {
+      text-align: center;
+    }
+    /* Toast styling for welcome message */
+    #toastMessage {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--container-bg);
+      color: var(--text-color);
+      padding: 10px 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: opacity 0.5s;
+      z-index: 100;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: inline-block;
+      width: 220px;
+      font-weight: bold;
+      vertical-align: middle;
+    }
+    input[type="number"],
+    input[type="date"] {
+      width: 180px;
+      padding: 5px;
+      font-size: inherit;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: inherit;
+      cursor: pointer;
+      background-color: var(--active-border-color);
+      color: var(--container-bg);
+      border: none;
+      border-radius: 4px;
+    }
+    /* Combined Buttons Row */
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    /* Amortization schedule table with alternating row colors */
+    #amortizationSchedule table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    #amortizationSchedule th, #amortizationSchedule td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: right;
+    }
+    #amortizationSchedule th {
+      background-color: var(--table-header-bg);
+      color: var(--table-header-text);
+    }
+    #amortizationSchedule td:first-child, #amortizationSchedule th:first-child {
+      text-align: center;
+    }
+    #amortizationSchedule tr:nth-child(even) {
+      background-color: var(--alt-row-color);
+    }
+    /* Tooltip styles using relative units */
+    .tooltip-icon {
+      display: inline-block;
+      margin-left: 0.3em;
+      color: #007BFF;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-radius: 50%;
+      width: 1.5em;
+      height: 1.5em;
+      text-align: center;
+      font-size: 1em;
+      line-height: 1.5em;
+      position: relative;
+    }
+    .tooltip-icon .tooltip-text {
+      visibility: hidden;
+      width: 15em;
+      background-color: #333;
+      color: #fff;
+      text-align: left;
+      border-radius: 6px;
+      padding: 0.3em;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.8em;
+    }
+    .tooltip-icon:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+    /* Modal styles (for Settings, Version History, and Disclaimer) */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: var(--container-bg);
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      max-width: 600px;
+      border-radius: 5px;
+    }
+    .close {
+      color: var(--text-color);
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .settings-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+    .theme-selector, .text-size-selector, .font-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .theme-option, .text-option {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+      cursor: pointer;
+      transition: border-color 0.3s;
+      background-color: var(--switcher-bg);
+      color: var(--text-color);
+    }
+    .theme-option.selected, .text-option.selected {
+      border: 2px solid var(--active-border-color);
+    }
+    .text-option[data-size="small"] {
+      font-size: 14px;
+    }
+    .text-option[data-size="medium"] {
+      font-size: 16px;
+    }
+    .text-option[data-size="large"] {
+      font-size: 22px;
+    }
+    .demo-section {
+      width: 100%;
+      padding: 10px;
+      border: 1px dashed var(--active-border-color);
+      text-align: center;
+      margin-top: 10px;
+    }
+    .font-selector select {
+      font-size: inherit;
+      padding: 5px;
+    }
+    /* Print styling */
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="theme-light">
+  <div class="container">
+    <h1>Loan Amortization Schedule</h1>
+    
+    <!-- Toast Welcome Message -->
+    <div id="toastMessage"></div>
+    
+    <!-- Combined Buttons for Settings, Version History & Disclaimer -->
+    <div class="button-container no-print">
+      <button class="modal-button" onclick="openSettingsModal()">Settings</button>
+      <button class="modal-button" onclick="openVersionModal()">Version History</button>
+      <button class="modal-button" onclick="openDisclaimerModal()">Disclaimer & Privacy</button>
+    </div>
+    
+    <!-- Input Form Card (Not printed) -->
+    <div class="card no-print">
+      <h2>Loan Details</h2>
+      <div class="input-group">
+        <label for="loanAmount">Loan Amount ($):</label>
+        <span class="tooltip-icon">ℹ
+          <span class="tooltip-text">Enter the total sum you are borrowing (the principal). This is the starting amount on which interest will be calculated.</span>
+        </span>
+        <input type="number" id="loanAmount" value="100000">
+      </div>
+      <div class="input-group">
+        <label for="annualRate">Annual Interest Rate (%):</label>
+        <span class="tooltip-icon">ℹ
+          <span class="tooltip-text">Enter the yearly interest rate (APR). This determines how much interest you will pay over the life of the loan.</span>
+        </span>
+        <input type="number" id="annualRate" value="5" step="0.01">
+      </div>
+      <div class="input-group">
+        <label for="loanTerm">Loan Term (Years):</label>
+        <span class="tooltip-icon">ℹ
+          <span class="tooltip-text">Enter the duration of your loan in years. This is used to calculate the number of payments.</span>
+        </span>
+        <input type="number" id="loanTerm" value="15">
+      </div>
+      <div class="input-group">
+        <label for="additionalPayment">Additional Monthly Payment ($):</label>
+        <span class="tooltip-icon">ℹ
+          <span class="tooltip-text">Enter any extra amount you plan to pay each month toward the principal. This will reduce your total interest paid and shorten the loan term.</span>
+        </span>
+        <input type="number" id="additionalPayment" value="0" step="0.01">
+      </div>
+      <div class="input-group">
+        <label for="startDate">Start Date:</label>
+        <span class="tooltip-icon">ℹ
+          <span class="tooltip-text">Select the date of your first payment. This date is used to schedule subsequent monthly payments.</span>
+        </span>
+        <input type="date" id="startDate" value="2025-01-01">
+      </div>
+      <button onclick="calculateLoan()">Calculate</button>
+    </div>
+    
+    <!-- On-screen Loan Details Table (3-column layout, transparent borders) -->
+    <div class="card" id="displayLoanDetails">
+      <h2>Entered Loan Details</h2>
+      <table class="detail-table">
+        <thead>
+          <tr>
+            <th>Loan Amount <span class="tooltip-icon">ℹ<span class="tooltip-text">Total amount borrowed (principal).</span></span></th>
+            <th>Interest Rate <span class="tooltip-icon">ℹ<span class="tooltip-text">Annual percentage rate (APR).</span></span></th>
+            <th>Loan Term <span class="tooltip-icon">ℹ<span class="tooltip-text">Duration in years.</span></span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="loanDetailsRow1"></tr>
+        </tbody>
+        <thead>
+          <tr>
+            <th>Additional Payment <span class="tooltip-icon">ℹ<span class="tooltip-text">Extra monthly payment toward principal.</span></span></th>
+            <th colspan="2">Start Date <span class="tooltip-icon">ℹ<span class="tooltip-text">Date of first payment.</span></span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="loanDetailsRow2"></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- On-screen Payment Summary Table (3-column layout, transparent borders) -->
+    <div class="card" id="paymentSummary">
+      <h2>Payment Summary</h2>
+      <table class="detail-table">
+        <thead>
+          <tr>
+            <th>Regular Payment <span class="tooltip-icon">ℹ<span class="tooltip-text">Monthly payment calculated from principal, term, and rate.</span></span></th>
+            <th>Additional Payment <span class="tooltip-icon">ℹ<span class="tooltip-text">Extra payment entered by you.</span></span></th>
+            <th>Total Payment <span class="tooltip-icon">ℹ<span class="tooltip-text">Sum of regular and additional payments.</span></span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="paymentSummaryRow"></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Amortization Schedule Card (with summary row appended) -->
+    <div class="card full" id="amortizationSchedule">
+      <!-- Schedule table generated via JavaScript -->
+    </div>
+  </div>
+  
+  <!-- Version History & Recommendations Modal -->
+  <div id="versionModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeVersionModal()">&times;</span>
+      <h2>Version History & Recommendations</h2>
+      <ul>
+        <li><strong>v1.0:</strong> Basic loan calculator with amortization schedule.</li>
+        <li><strong>v2.0:</strong> Added additional monthly payment and cumulative summaries.</li>
+        <li><strong>v3.0:</strong> Integrated localStorage, tooltips, and theme switcher.</li>
+        <li><strong>v4.0:</strong> Introduced modern card layout, 3‑column detail views, and print‑friendly design.</li>
+        <li><strong>v5.0:</strong> Added dynamic text size switcher and version history modal.</li>
+        <li><strong>v6.0:</strong> Moved settings into a modal and converted welcome message to a toast.</li>
+        <li><strong>v7.0:</strong> Enhanced detailed tooltips, converted detail displays into transparent tables, integrated summary data into the amortization table.</li>
+        <li><strong>v8.0:</strong> Added updates to version history and made tooltip icons and text resize dynamically based on text size settings.</li>
+      </ul>
+    </div>
+  </div>
+  
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeSettingsModal()">&times;</span>
+      <h2>Settings</h2>
+      <div class="settings-content">
+        <div class="theme-selector">
+          <span>Select Theme:</span>
+          <span class="theme-option" data-theme="light" title="Light Theme" style="background-color: #f4f4f4;"></span>
+          <span class="theme-option" data-theme="dark" title="Dark Theme" style="background-color: #222222;"></span>
+          <span class="theme-option" data-theme="blue" title="Blue Theme" style="background-color: #007BFF;"></span>
+        </div>
+        <div class="text-size-selector">
+          <span>Text Size:</span>
+          <span class="text-option" data-size="small" title="Small">S</span>
+          <span class="text-option" data-size="medium" title="Medium">M</span>
+          <span class="text-option" data-size="large" title="Large">L</span>
+        </div>
+        <div class="font-selector">
+          <span>Select Font:</span>
+          <select id="fontSelect">
+            <option value="Arial" selected>Arial</option>
+            <option value="'Times New Roman', Times, serif">Times New Roman</option>
+            <option value="'Courier New', Courier, monospace">Courier New</option>
+            <option value="Verdana, Geneva, sans-serif">Verdana</option>
+            <option value="Georgia, serif">Georgia</option>
+          </select>
+        </div>
+        <div class="demo-section">
+          <p>This is a sample text showing the current font, color, and text size.</p>
+          <button>Sample Button</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Disclaimer & Privacy Modal -->
+  <div id="disclaimerModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeDisclaimerModal()">&times;</span>
+      <h2>Disclaimer & Privacy Policy</h2>
+      <p>
+        The information you enter in this application is stored locally in your browser's storage and is not transmitted or shared with any third parties.
+        This tool is provided "as-is" without any warranty. Your privacy is our priority.
+      </p>
+      <p>
+        Copyright &copy; 2025 <a href="https://github.com/skitzofrenzy" target="_blank" style="color:inherit; text-decoration:underline;">https://github.com/skitzofrenzy</a>
+      </p>
+    </div>
+  </div>
+  
+  <script>
+    // Toast function for welcome message
+    function showToast(message) {
+      var toast = document.getElementById("toastMessage");
+      toast.innerText = message;
+      toast.style.opacity = "1";
+      setTimeout(function(){
+        toast.style.opacity = "0";
+      }, 5000);
+    }
+    
+    // On load: display toast welcome message and load saved settings
+    window.onload = function() {
+      if(localStorage.getItem("loanAmount") || localStorage.getItem("annualRate") ||
+         localStorage.getItem("loanTerm") || localStorage.getItem("additionalPayment") ||
+         localStorage.getItem("startDate")) {
+        showToast("Welcome back! Your previous data has been retrieved.");
+      } else {
+        showToast("Welcome! Please enter your loan details.");
+      }
+      
+      // Load saved form data
+      if(localStorage.getItem("loanAmount")) {
+        document.getElementById("loanAmount").value = localStorage.getItem("loanAmount");
+      }
+      if(localStorage.getItem("annualRate")) {
+        document.getElementById("annualRate").value = localStorage.getItem("annualRate");
+      }
+      if(localStorage.getItem("loanTerm")) {
+        document.getElementById("loanTerm").value = localStorage.getItem("loanTerm");
+      }
+      if(localStorage.getItem("additionalPayment")) {
+        document.getElementById("additionalPayment").value = localStorage.getItem("additionalPayment");
+      }
+      if(localStorage.getItem("startDate")) {
+        document.getElementById("startDate").value = localStorage.getItem("startDate");
+      }
+      if(localStorage.getItem("selectedTheme")) {
+        applyTheme(localStorage.getItem("selectedTheme"));
+      } else {
+        applyTheme("light");
+      }
+      if(localStorage.getItem("selectedTextSize")) {
+        applyTextSize(localStorage.getItem("selectedTextSize"));
+      } else {
+        applyTextSize("medium");
+      }
+      if(localStorage.getItem("selectedFont")) {
+        applyFont(localStorage.getItem("selectedFont"));
+        document.getElementById("fontSelect").value = localStorage.getItem("selectedFont");
+      }
+      calculateLoan();
+    };
+
+    function saveFormData() {
+      localStorage.setItem("loanAmount", document.getElementById("loanAmount").value);
+      localStorage.setItem("annualRate", document.getElementById("annualRate").value);
+      localStorage.setItem("loanTerm", document.getElementById("loanTerm").value);
+      localStorage.setItem("additionalPayment", document.getElementById("additionalPayment").value);
+      localStorage.setItem("startDate", document.getElementById("startDate").value);
+    }
+
+    function calculateLoan() {
+      saveFormData();
+      var loanAmount = parseFloat(document.getElementById('loanAmount').value);
+      var annualRate = parseFloat(document.getElementById('annualRate').value);
+      var loanTerm = parseFloat(document.getElementById('loanTerm').value);
+      var additionalPayment = parseFloat(document.getElementById('additionalPayment').value);
+      var startDateInput = document.getElementById('startDate').value;
+      var startDate = new Date(startDateInput);
+      
+      var monthlyRate = annualRate / 100 / 12;
+      var totalPayments = loanTerm * 12;
+      var regularPayment = loanAmount * monthlyRate / (1 - Math.pow(1 + monthlyRate, -totalPayments));
+      var totalMonthlyPayment = regularPayment + additionalPayment;
+      
+      // Populate on-screen Loan Details Table
+      var row1 = "<td>$" + loanAmount.toFixed(2) + "</td>" +
+                 "<td>" + annualRate.toFixed(2) + "%</td>" +
+                 "<td>" + loanTerm + " years</td>";
+      var row2 = "<td>$" + additionalPayment.toFixed(2) + "</td>" +
+                 "<td colspan='2'>" + startDateInput + "</td>";
+      document.getElementById("loanDetailsRow1").innerHTML = row1;
+      document.getElementById("loanDetailsRow2").innerHTML = row2;
+      
+      // Populate on-screen Payment Summary Table
+      var paymentRow = "<td>$" + regularPayment.toFixed(2) + "</td>" +
+                       "<td>$" + additionalPayment.toFixed(2) + "</td>" +
+                       "<td>$" + totalMonthlyPayment.toFixed(2) + "</td>";
+      document.getElementById("paymentSummaryRow").innerHTML = paymentRow;
+      
+      // Build amortization schedule with summary row appended at the end
+      var totalInterest = 0;
+      var totalPaid = 0;
+      var scheduleHTML = "<table><tr>" +
+        "<th>Payment # <span class='tooltip-icon no-print'>ℹ<span class='tooltip-text'>Sequential payment number.</span></span></th>" +
+        "<th>Payment Date <span class='tooltip-icon no-print'>ℹ<span class='tooltip-text'>Date due for each payment.</span></span></th>" +
+        "<th>Beginning Balance <span class='tooltip-icon no-print'>ℹ<span class='tooltip-text'>Balance at the start of the period.</span></span></th>" +
+        "<th>Scheduled Payment <span class='tooltip-icon no-print'>ℹ<span class='tooltip-text'>Total monthly payment (regular + additional).</span></span></th>" +
+        "<th>Principal <span class='tooltip-icon no-print'>ℹ<span class='tooltip-text'>Portion reducing the principal.</span></span></th>" +
+        "<th>Interest <span class='tooltip-icon no-print'>ℹ<span class='tooltip-text'>Interest for the period.</span></span></th>" +
+        "<th>Ending Balance <span class='tooltip-icon no-print'>ℹ<span class='tooltip-text'>Remaining balance after payment.</span></span></th>" +
+        "</tr>";
+      
+      var balance = loanAmount;
+      var paymentDate = new Date(startDate);
+      for (var i = 1; i <= totalPayments; i++) {
+        if (balance <= 0) break;
+        var interestPayment = balance * monthlyRate;
+        var principalPayment = totalMonthlyPayment - interestPayment;
+        if (principalPayment > balance) {
+          principalPayment = balance;
+          totalMonthlyPayment = principalPayment + interestPayment;
+        }
+        var endingBalance = balance - principalPayment;
+        totalInterest += interestPayment;
+        totalPaid += (principalPayment + interestPayment);
+        var year = paymentDate.getFullYear();
+        var month = ("0" + (paymentDate.getMonth() + 1)).slice(-2);
+        var day = ("0" + paymentDate.getDate()).slice(-2);
+        var formattedDate = year + "-" + month + "-" + day;
+        scheduleHTML += "<tr>" +
+          "<td>" + i + "</td>" +
+          "<td>" + formattedDate + "</td>" +
+          "<td>$" + balance.toFixed(2) + "</td>" +
+          "<td>$" + totalMonthlyPayment.toFixed(2) + "</td>" +
+          "<td>$" + principalPayment.toFixed(2) + "</td>" +
+          "<td>$" + interestPayment.toFixed(2) + "</td>" +
+          "<td>$" + endingBalance.toFixed(2) + "</td>" +
+          "</tr>";
+        balance = endingBalance;
+        paymentDate.setMonth(paymentDate.getMonth() + 1);
+      }
+      scheduleHTML += "<tr style='font-weight:bold; text-align:center;'>" +
+                      "<td colspan='7'>Cumulative Interest Paid: $" + totalInterest.toFixed(2) +
+                      " | Total Amount Paid: $" + totalPaid.toFixed(2) + "</td>" +
+                      "</tr>";
+      scheduleHTML += "</table>";
+      document.getElementById('amortizationSchedule').innerHTML = scheduleHTML;
+    }
+
+    function applyTheme(theme) {
+      document.body.classList.remove("theme-light", "theme-dark", "theme-blue");
+      if(theme === "dark") {
+        document.body.classList.add("theme-dark");
+      } else if(theme === "blue") {
+        document.body.classList.add("theme-blue");
+      } else {
+        document.body.classList.add("theme-light");
+      }
+      localStorage.setItem("selectedTheme", theme);
+      var options = document.getElementsByClassName("theme-option");
+      for(var i = 0; i < options.length; i++) {
+        options[i].classList.remove("selected");
+        if(options[i].getAttribute("data-theme") === theme) {
+          options[i].classList.add("selected");
+        }
+      }
+    }
+
+    function applyTextSize(size) {
+      var fontSize;
+      if(size === "small") {
+        fontSize = "14px";
+      } else if(size === "large") {
+        fontSize = "22px";
+      } else {
+        fontSize = "16px"; // medium
+      }
+      document.body.style.fontSize = fontSize;
+      localStorage.setItem("selectedTextSize", size);
+      var options = document.getElementsByClassName("text-option");
+      for(var i = 0; i < options.length; i++) {
+        options[i].classList.remove("selected");
+        if(options[i].getAttribute("data-size") === size) {
+          options[i].classList.add("selected");
+        }
+      }
+    }
+
+    function applyFont(font) {
+      document.body.style.fontFamily = font;
+      localStorage.setItem("selectedFont", font);
+    }
+
+    // Settings Modal functions
+    function openSettingsModal() {
+      document.getElementById("settingsModal").style.display = "block";
+    }
+    function closeSettingsModal() {
+      document.getElementById("settingsModal").style.display = "none";
+    }
+    // Version History Modal functions
+    function openVersionModal() {
+      document.getElementById("versionModal").style.display = "block";
+    }
+    function closeVersionModal() {
+      document.getElementById("versionModal").style.display = "none";
+    }
+    // Disclaimer Modal functions
+    function openDisclaimerModal() {
+      document.getElementById("disclaimerModal").style.display = "block";
+    }
+    function closeDisclaimerModal() {
+      document.getElementById("disclaimerModal").style.display = "none";
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      var themeOptions = document.getElementsByClassName("theme-option");
+      for(var i = 0; i < themeOptions.length; i++) {
+        themeOptions[i].addEventListener("click", function() {
+          var selectedTheme = this.getAttribute("data-theme");
+          applyTheme(selectedTheme);
+        });
+      }
+      var textOptions = document.getElementsByClassName("text-option");
+      for(var i = 0; i < textOptions.length; i++) {
+        textOptions[i].addEventListener("click", function() {
+          var selectedSize = this.getAttribute("data-size");
+          applyTextSize(selectedSize);
+        });
+      }
+      document.getElementById("fontSelect").addEventListener("change", function() {
+        applyFont(this.value);
+      });
+    });
+  </script>
+</body>
+</html>
