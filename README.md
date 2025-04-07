@@ -2,6 +2,8 @@
 
 The Loan Amortization Calculator is a user-friendly web application designed to help users calculate and visualize their loan repayment schedules. By inputting key loan parameters, users can generate detailed amortization schedules, explore payment summaries, and customize the application's appearance to their preferences.
 
+👉 **Live Site**: [https://skitzofrenzy.github.io/LoanAmortizationCalculator/](https://skitzofrenzy.github.io/LoanAmortizationCalculator/)
+
 ## Features
 
 - **Loan Details Input**: Enter loan amount, annual interest rate, loan term, additional monthly payments, and start date.
