@@ -196,7 +196,7 @@
     }
 
     /* Tooltip styles using relative units */
-    .tooltip-icon {
+    .tooltip-icon, .info-icon {
       display: inline-block;
       margin-left: 0.3em;
       color: #007BFF;
@@ -313,6 +313,46 @@
       font-size: 22px;
     }
 
+    /* Info icon attached to the title */
+    .info-icon {
+      cursor: pointer;
+      margin-left: 10px;
+      color: var(--text-color);
+      font-size: 16px;
+    }
+
+    /* Modal styles for explanation */
+    .info-modal {
+      display: none;
+      /* Ensure the modal is hidden initially */
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .info-modal-content {
+      background-color: var(--container-bg);
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      max-width: 600px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .info-modal .close {
+      color: var(--text-color);
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      float: right;
+    }
+
+
     .demo-section {
       width: 100%;
       padding: 10px;
@@ -376,7 +416,32 @@
 
 <body class="theme-light">
   <div class="container">
-    <h1>Loan Amortization Schedule</h1>
+    <h1>
+      Loan Amortization Schedule
+      <span class="info-icon" onclick="openInfoModal()">ℹ</span> <!-- Info icon next to the title -->
+    </h1>
+
+    <!-- Modal for explanation -->
+    <div id="infoModal" class="info-modal">
+      <div class="info-modal-content">
+        <span class="close" onclick="closeInfoModal()">&times;</span>
+        <h2>What is a Loan Amortization Calculator?</h2>
+        <p>
+          A Loan Amortization Calculator is a tool that helps you calculate the periodic payments of a loan based on the
+          loan amount,
+          interest rate, and term. It breaks down each payment into the amount applied toward the principal and the
+          amount applied
+          toward the interest. This allows you to track how the loan balance reduces over time and provides insight into
+          the total
+          interest paid over the life of the loan.
+        </p>
+        <p>
+          The tool also helps you understand the impact of additional payments on the loan, which can help you pay off
+          the loan
+          faster and reduce the total interest paid.
+        </p>
+      </div>
+    </div>
 
     <!-- Toast Welcome Message -->
     <div id="toastMessage"></div>
@@ -853,6 +918,16 @@
     }
     function closeDisclaimerModal() {
       document.getElementById("disclaimerModal").style.display = "none";
+    }
+
+    // Function to open the info modal
+    function openInfoModal() {
+      document.getElementById("infoModal").style.display = "block";
+    }
+
+    // Function to close the info modal
+    function closeInfoModal() {
+      document.getElementById("infoModal").style.display = "none";
     }
 
     // Set selected values from pills
