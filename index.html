@@ -196,7 +196,8 @@
     }
 
     /* Tooltip styles using relative units */
-    .tooltip-icon, .info-icon {
+    .tooltip-icon,
+    .info-icon {
       display: inline-block;
       margin-left: 0.3em;
       color: #007BFF;
@@ -690,7 +691,30 @@
           'Bugfix: Fixed issue where date input would not reflect changes after theme switch.',
           'Small UX improvements for pill-style selectors.'
         ]
+      },
+      {
+        version: '1.2.2',
+        date: '2025-04-10',
+        changes: [
+          'Added an info modal to explain what a loan amortization calculator is.',
+          'Implemented functionality to open and close the modal using an info icon next to the app title.',
+          'Styled the modal with a fixed position and transparent background overlay.',
+          'Enhanced user experience by providing an interactive modal for better understanding of the tool.'
+        ]
       }
+      ,
+      {
+        version: '1.2.3',
+        date: '2025-04-10',
+        changes: [
+          'Reworked the info modal functionality to ensure better display and user interaction.',
+          'Fixed issue where the modal was visible on page load; now it is hidden by default.',
+          'Refined the modal styling for better consistency with the current theme and layout.',
+          'Improved the opening/closing behavior of the info modal for smoother transitions.',
+          'Updated the info modal content for better clarity and context on loan amortization calculation.'
+        ]
+      }
+
     ];
 
     // Function to populate version modal with version history
